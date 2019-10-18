@@ -19,8 +19,6 @@ import com.gcox.fansmeet.core.adapter.DisplayableItem
 import com.gcox.fansmeet.core.adapter.OnLoadMoreListenerRecyclerView
 import com.gcox.fansmeet.core.dialog.DialogInfoUtility
 import com.gcox.fansmeet.features.home.*
-import com.gcox.fansmeet.features.profile.ChallengeListActivity
-import com.gcox.fansmeet.features.profile.userprofile.UserProfileActivity
 import com.gcox.fansmeet.util.CheckNetwork
 import com.gcox.fansmeet.util.UiUtils
 import org.koin.android.viewmodel.ext.android.viewModel
@@ -61,30 +59,18 @@ class MerchantsFragment : BaseFragment(), HomeViewHolder.OnClickListener, HomeBa
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-//        typeFeed = arguments?.getInt(CATEGORY_ID)
         observeData()
         homeScreenAdapter = HomeScreenAdapter(LiveShowDiffCallBack(), listUser, this, this)
         rcvListUser.adapter = homeScreenAdapter
         rcvListUser.setOnLoadMoreListener(this)
         UiUtils.setColorSwipeRefreshLayout(swiperefresh)
         swiperefresh.setOnRefreshListener { refreshData() }
-//        showDialog()
-//        homeViewModel.getUsers(typeFeed!!, nextId)
         if (!areLecturesLoaded) {
             showDialog()
             homeViewModel.getUsers(HomeChildType.MERCHANTS, nextId)
             areLecturesLoaded = true
         }
     }
-
-//    override fun setUserVisibleHint(isVisibleToUser: Boolean) {
-//        Timber.e("typeFeed %s", typeFeed)
-//        if (isVisibleToUser && isResumed && !areLecturesLoaded) {
-//            showDialog()
-//            homeViewModel.getUsers(HomeChildType.MERCHANTS, nextId)
-//            areLecturesLoaded = true
-//        }
-//    }
 
     override fun onFollowClicked(item: CelebritiesMode, position: Int) {
         if (!item.isFollow!!) homeViewModel.followUser(item.userId!!, position)
@@ -95,12 +81,7 @@ class MerchantsFragment : BaseFragment(), HomeViewHolder.OnClickListener, HomeBa
     }
 
     override fun onUserImageClicked(item: CelebritiesMode) {
-        val options =
-            ActivityOptionsCompat.makeCustomAnimation(context!!, R.anim.push_in_to_right, R.anim.push_in_to_left)
-        startActivityForResult(
-            UserProfileActivity.newIntent(context!!, item.userId!!, item.userName!!),
-            Constants.REQUEST_CODE_VIEW_USER_PROFILE, options.toBundle()
-        )
+
     }
 
     private fun refreshData() {

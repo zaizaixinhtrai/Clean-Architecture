@@ -12,9 +12,7 @@ import com.gcox.fansmeet.core.adapter.DisplayableItem
 import com.gcox.fansmeet.core.adapter.OnLoadMoreListenerRecyclerView
 import com.gcox.fansmeet.core.dialog.DialogInfoUtility
 import com.gcox.fansmeet.core.fragment.BaseFragment
-import com.gcox.fansmeet.features.challengedetail.ChallengeDetailActivity
 import com.gcox.fansmeet.features.challenges.viewholders.ChallengeViewHolder
-import com.gcox.fansmeet.features.challengeentries.ChallengeEntriesActivity
 import com.gcox.fansmeet.models.eventbus.EventBusRefreshEntries
 import com.gcox.fansmeet.util.CheckNetwork
 import com.gcox.fansmeet.util.UiUtils
@@ -100,25 +98,11 @@ class ChallengesScreenFragment : BaseFragment(), ChallengeViewHolder.OnClickList
     }
 
     override fun onUserImageClicked(item: Entries) {
-        val options =
-            ActivityOptionsCompat.makeCustomAnimation(context!!, R.anim.push_in_to_right, R.anim.push_in_to_left)
-        val intentGift = ChallengeEntriesActivity.newIntent(context!!, item.id!!)
-        startActivityForResult(
-            intentGift,
-            Constants.REQUEST_CHALLENGE_ENTRIES_ACTIVITY,
-            options.toBundle()
-        )
+
     }
 
     override fun onViewEntriesClicked(item: ChallengeModel) {
-        val options =
-            ActivityOptionsCompat.makeCustomAnimation(context!!, R.anim.push_in_to_right, R.anim.push_in_to_left)
-        val intentGift = ChallengeDetailActivity.newIntent(context!!, item.id!!, true)
-        startActivityForResult(
-            intentGift,
-            Constants.REQUEST_CHALLENGE_DETAIL_ACTIVITY,
-            options.toBundle()
-        )
+
     }
 
     private fun observeData() {

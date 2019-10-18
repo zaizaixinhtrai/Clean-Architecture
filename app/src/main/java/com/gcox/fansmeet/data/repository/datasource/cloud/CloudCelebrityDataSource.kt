@@ -26,7 +26,7 @@ constructor(private val service: AppsterWebserviceAPI) :
         return if (username.isEmpty()) {
             service.celebrityProfile(AppsterUtility.getAuth(), userId)
         } else {
-            service.getUserProfile(AppsterUtility.getAuth(), username)
+            service.celebrityProfile(AppsterUtility.getAuth(), userId)
         }
     }
 

@@ -14,12 +14,11 @@ class ChallengesViewModel constructor(
     private val getChallengeListEntriesUseCase: GetChallengeListEntriesUseCase
 ) : BaseViewModel() {
 
-    private var challengeListEntries = MutableLiveData<BaseDataPagingResponseModel<DisplayableItem>>()
-    val getChallengeListEntries = challengeListEntries
+    val getChallengeListEntries  = MutableLiveData<BaseDataPagingResponseModel<DisplayableItem>>()
 
     fun getChallengeList( nextId: Int,  pageLimited: Int){
         runUseCase(getChallengeListEntriesUseCase, GetChallengeListEntriesUseCase.Params.loadPage(nextId,pageLimited)) {
-            challengeListEntries.value = it
+            getChallengeListEntries.value = it
         }
     }
 }

@@ -28,7 +28,6 @@ import com.gcox.fansmeet.data.di.appModules
 import com.gcox.fansmeet.exception.GcoxException
 import com.gcox.fansmeet.features.login.LoginActivity
 import com.gcox.fansmeet.manager.SocialManager
-import com.gcox.fansmeet.pushnotification.OneSignalUtil
 import com.gcox.fansmeet.webservice.AppsterWebServices
 import com.onesignal.OneSignal
 import com.twitter.sdk.android.core.DefaultLogger
@@ -105,11 +104,6 @@ class AppsterApplication : android.support.multidex.MultiDexApplication(), HasAc
         }
         // Fabric
         Fabric.with(this, Crashlytics())
-
-        // OneSignal - notification
-        OneSignalUtil.init(this)
-        OneSignal.setLocationShared(false)
-        OneSignalUtil.setUser(mAppPreferences.userModel)
     }
 
     fun startKoin() {

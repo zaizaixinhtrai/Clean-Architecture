@@ -15,8 +15,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 
-import android.text.TextUtils;
-import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 import com.facebook.*;
 import com.facebook.login.LoginManager;
@@ -26,8 +24,6 @@ import com.facebook.share.model.*;
 import com.facebook.share.widget.ShareDialog;
 import com.gcox.fansmeet.AppsterApplication;
 import com.gcox.fansmeet.common.Constants;
-import com.gcox.fansmeet.features.profile.ItemModelClassNewsFeed;
-import com.gcox.fansmeet.features.profile.celebrityprofile.delegates.CelebrityModel;
 import com.gcox.fansmeet.util.*;
 import com.gcox.fansmeet.webservice.request.LoginFacebookRequestModel;
 import com.google.android.gms.auth.api.Auth;
@@ -39,7 +35,6 @@ import com.twitter.sdk.android.tweetcomposer.TweetComposer;
 import io.reactivex.disposables.CompositeDisposable;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.reactivestreams.Subscription;
 import timber.log.Timber;
 
 import java.io.*;
@@ -361,17 +356,6 @@ public class SocialManager {
     }
 
 
-    public void shareFeedToFacebook(Context context, CelebrityModel item) {
-        if (item == null) return;
-        if (item.getWebPostUrl() == null) return;
-        ShareDialog shareDialog = new ShareDialog((AppCompatActivity) context);
-        ShareLinkContent linkContent = new ShareLinkContent.Builder()
-                .setContentUrl(Uri.parse(item.getWebPostUrl()))
-                .build();
-
-        shareDialog.show(linkContent);
-    }
-
     public void shareURLToFacebook(Context context, String Url) {
         shareURLToFacebook(context, Url, -1, null, null);
     }
@@ -583,88 +567,6 @@ public class SocialManager {
         }
     }
 
-    public void shareFeedToInstagram(final Context context, final CelebrityModel itemFeed) {
-        if (itemFeed == null) return;
-        mRxPermissions = new RxPermissions((Activity) context);
-        if (itemFeed.getMediaType() == Constants.POST_TYPE_IMAGE || itemFeed.getMediaType() == Constants.POST_TYPE_CHALLENGE_SELFIE) {
-
-            String fileName = getFileNameFromURL(itemFeed.getImage().trim());
-//            DownloadBitmap.getInstance().deleteAllFile();
-            mSubscriptionExternalPermissions = new CompositeDisposable();
-            mSubscriptionExternalPermissions.add(mRxPermissions.request(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    .subscribe(granted -> {
-                        if (granted) {
-                            DownloadBitmap.getInstance().deleteAllFile();
-                            if (DownloadBitmap.getInstance().isNeedDownloadedImage(Constants.APPSTERS_IMAGE_SHARE,
-                                    fileName)) {
-                                DownloadBitmap.getInstance().downloadBitmap(context, itemFeed.getImage(),
-                                        Constants.APPSTERS_IMAGE_SHARE, fileName,
-                                        new DownloadBitmap.IDownloadListener() {
-                                            @Override
-                                            public void successful(String filePath) {
-                                                shareFeedToInstagram(context, itemFeed.getMediaType(), Uri.parse("file://" + filePath));
-                                                if (mSubscriptionExternalPermissions != null && !mSubscriptionExternalPermissions.isDisposed())
-                                                    mSubscriptionExternalPermissions.dispose();
-                                            }
-
-                                            @Override
-                                            public void fail() {
-                                                Timber.e("DownloadBitmap_fail");
-                                                if (mSubscriptionExternalPermissions != null && !mSubscriptionExternalPermissions.isDisposed())
-                                                    mSubscriptionExternalPermissions.dispose();
-                                            }
-                                        });
-                            } else {
-                                shareFeedToInstagram(context, itemFeed.getMediaType(), Uri.parse("file://" + Constants.APPSTERS_IMAGE_SHARE +
-                                        fileName));
-                                if (mSubscriptionExternalPermissions != null && !mSubscriptionExternalPermissions.isDisposed())
-                                    mSubscriptionExternalPermissions.dispose();
-                            }
-                        } else {
-                            if (mSubscriptionExternalPermissions != null && !mSubscriptionExternalPermissions.isDisposed())
-                                mSubscriptionExternalPermissions.dispose();
-                        }
-                    }));
-
-        } else if (itemFeed.getMediaType() == Constants.POST_TYPE_VIDEO) {
-            mSubscriptionExternalPermissions = new CompositeDisposable();
-            mSubscriptionExternalPermissions.add(mRxPermissions.request(Manifest.permission.READ_EXTERNAL_STORAGE)
-                    .subscribe(granted -> {
-                        if (granted) {
-                            FileUtility.deleteVideoCacheFile();
-                            DownloadVideos.getInstance().isVideoAlreadyDownloaded(itemFeed.getVideo(),
-                                    (isNeedToDownload, videoLocalPath) -> ((Activity) context).runOnUiThread(() -> {
-                                        if (!isNeedToDownload) {
-                                            shareFeedToInstagram(context, itemFeed.getMediaType(), Uri.parse(videoLocalPath));
-                                        } else {
-                                            DownloadVideos.getInstance().downloadVideoFile(itemFeed.getVideo(), new DownloadVideos.IDownloadListener() {
-                                                @Override
-                                                public void successful(final String filePath) {
-                                                    ((Activity) context).runOnUiThread(() -> {
-                                                        shareFeedToInstagram(context, itemFeed.getMediaType(), Uri.parse(filePath));
-                                                        if (mSubscriptionExternalPermissions != null && !mSubscriptionExternalPermissions.isDisposed())
-                                                            mSubscriptionExternalPermissions.dispose();
-                                                    });
-                                                }
-
-                                                @Override
-                                                public void fail() {
-                                                    if (mSubscriptionExternalPermissions != null && !mSubscriptionExternalPermissions.isDisposed())
-                                                        mSubscriptionExternalPermissions.dispose();
-                                                }
-                                            });
-                                        }
-                                    }));
-                        } else {
-                            if (mSubscriptionExternalPermissions != null && !mSubscriptionExternalPermissions.isDisposed())
-                                mSubscriptionExternalPermissions.dispose();
-                        }
-                    }));
-        } else {
-
-            Toast.makeText(context.getApplicationContext(), context.getString(R.string.share_instagram_not_share_text), Toast.LENGTH_SHORT).show();
-        }
-    }
 
     public void shareFeedToInstagram(Context context, int type, final Uri uri) {
 
@@ -689,61 +591,6 @@ public class SocialManager {
             //Close current activity
         } else {
             Toast.makeText(context.getApplicationContext(), context.getString(R.string.share_no_instagram_app), Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    public void shareFeedToTwitter(final Context context, final CelebrityModel item, boolean isStream) {
-        if (item == null) return;
-        if (item.getMediaType() == Constants.POST_TYPE_IMAGE || item.getMediaType() == Constants.POST_TYPE_CHALLENGE_SELFIE) {
-
-            String fileName = getFileNameFromURL(replaceTimeInUrl(item.getImage()));
-
-            DownloadBitmap.getInstance().deleteAllFile();
-            if (DownloadBitmap.getInstance().isNeedDownloadedImage(Constants.APPSTERS_IMAGE_SHARE,
-                    fileName)) {
-
-                DownloadBitmap.getInstance().downloadBitmap(context, item.getImage(),
-                        Constants.APPSTERS_IMAGE_SHARE, fileName,
-                        new DownloadBitmap.IDownloadListener() {
-                            @Override
-                            public void successful(String filePath) {
-                                ShareFeedImageToTwitter(context, Uri.parse(filePath), item.getWebPostUrl(), item.getUserName(), SHARE_TYPE_POST);
-                            }
-
-                            @Override
-                            public void fail() {
-
-                            }
-                        });
-            } else {
-                ShareFeedImageToTwitter(context,
-                        Uri.parse(Constants.APPSTERS_IMAGE_SHARE + File.separator + fileName),
-                        item.getWebPostUrl(), item.getUserName(), SHARE_TYPE_POST);
-            }
-
-        } else if (item.getMediaType() == Constants.POST_TYPE_VIDEO) {
-
-            FileUtility.deleteVideoCacheFile();
-            DownloadVideos.getInstance().isVideoAlreadyDownloaded(item.getVideo(),
-                    (isNeedToDownload, videoLocalPath) -> ((Activity) context).runOnUiThread(() -> {
-                        if (!isNeedToDownload) {
-                            shareVideoToTwitter(context, videoLocalPath, item.getWebPostUrl(), item.getUserName(), SHARE_TYPE_POST);
-                        } else {
-
-                            DownloadVideos.getInstance().downloadVideoFile(item.getVideo(), new DownloadVideos.IDownloadListener() {
-                                @Override
-                                public void successful(final String filePath) {
-                                    ((Activity) context).runOnUiThread(() -> shareVideoToTwitter(context, filePath, item.getWebPostUrl(), item.getUserName(), SHARE_TYPE_POST));
-                                }
-
-                                @Override
-                                public void fail() {
-                                }
-                            });
-                        }
-                    }));
-        } else {
-            ShareFeedQuotesToTwitter(context, item.getWebPostUrl(), item.getUserName(), "", isStream ? SHARE_TYPE_STREAM : SHARE_TYPE_POST, true);
         }
     }
 
@@ -801,79 +648,6 @@ public class SocialManager {
         ShareFeedQuotesToTwitter(context, getShareContent(context, userName, title, type, isHost), url);
     }
 
-    public void shareFeedToShareAction(final boolean isEmail, final Context context, final CelebrityModel itemFeed, boolean isStream) {
-        if (itemFeed == null) return;
-        if (itemFeed.getMediaType() == Constants.POST_TYPE_IMAGE || itemFeed.getMediaType() == Constants.POST_TYPE_CHALLENGE_SELFIE) {
-
-            String fileName = getFileNameFromURL(replaceTimeInUrl(itemFeed.getImage()));
-
-            DownloadBitmap.getInstance().deleteAllFile();
-            if (DownloadBitmap.getInstance().isNeedDownloadedImage(Constants.APPSTERS_IMAGE_SHARE,
-                    fileName)) {
-
-                DownloadBitmap.getInstance().downloadBitmap(context, itemFeed.getImage(),
-                        Constants.APPSTERS_IMAGE_SHARE, fileName,
-                        new DownloadBitmap.IDownloadListener() {
-                            @Override
-                            public void successful(String filePath) {
-                                if (isEmail) {
-                                    shareImageToEmail(context, Uri.parse("file://" + filePath), itemFeed.getWebPostUrl(), itemFeed.getUserName(), SHARE_TYPE_POST);
-                                } else {
-                                    shareImageToOthers(context, Uri.parse("file://" + filePath), itemFeed.getWebPostUrl(), itemFeed.getUserName(), SHARE_TYPE_POST);
-
-                                }
-                            }
-
-                            @Override
-                            public void fail() {
-
-                            }
-                        });
-            } else {
-                if (isEmail) {
-                    shareImageToEmail(context, Uri.parse("file://" + Constants.APPSTERS_IMAGE_SHARE +
-                            fileName), itemFeed.getWebPostUrl(), itemFeed.getUserName(), SHARE_TYPE_POST);
-                } else {
-                    shareImageToOthers(context, Uri.parse("file://" + Constants.APPSTERS_IMAGE_SHARE +
-                            fileName), itemFeed.getWebPostUrl(), itemFeed.getUserName(), SHARE_TYPE_POST);
-                }
-            }
-
-        } else if (itemFeed.getMediaType() == Constants.POST_TYPE_VIDEO) {
-
-            if (!isEmail) {
-                shareVideoToOthers(context, itemFeed.getWebPostUrl(), itemFeed.getUserName(), SHARE_TYPE_POST);
-                return;
-            }
-            FileUtility.deleteVideoCacheFile();
-            DownloadVideos.getInstance().isVideoAlreadyDownloaded(itemFeed.getVideo(), (isNeedToDownload, videoLocalPath) -> ((Activity) context).runOnUiThread(() -> {
-                if (!isNeedToDownload) {
-                    shareVideoToEmail(context, Uri.parse("file://" + videoLocalPath), itemFeed.getWebPostUrl(), itemFeed.getUserName(), SHARE_TYPE_POST);
-                } else {
-
-                    DownloadVideos.getInstance().downloadVideoFile(itemFeed.getVideo(), new DownloadVideos.IDownloadListener() {
-                        @Override
-                        public void successful(final String filePath) {
-                            ((Activity) context).runOnUiThread(() -> shareVideoToEmail(context, Uri.parse("file://" + videoLocalPath), itemFeed.getWebPostUrl(), itemFeed.getUserName(), SHARE_TYPE_POST));
-
-                        }
-
-                        @Override
-                        public void fail() {
-                        }
-                    });
-                }
-            }));
-
-        } else {
-            if (isEmail) {
-                shareQuotesToEmail(context, itemFeed, isStream);
-            } else {
-                shareQuotesToOthers(context, itemFeed.getWebPostUrl(), itemFeed.getUserName(), isStream ? SHARE_TYPE_STREAM : SHARE_TYPE_POST);
-            }
-        }
-    }
-
     void shareImageToEmail(Context context, Uri uriImage, String urlImage, String userName, String type) {
 
         Intent intent = new Intent(Intent.ACTION_SENDTO);
@@ -925,65 +699,11 @@ public class SocialManager {
         }
     }
 
-    private void shareQuotesToEmail(Context context, CelebrityModel itemFeed, boolean isStream) {
-        String subject = getShareContent(context, itemFeed.getUserName(), "", isStream ? SHARE_TYPE_STREAM : SHARE_TYPE_POST, false).trim();
-        String url = itemFeed.getWebPostUrl();
-        shareQuotesToEmail(context, subject, url);
-    }
-
     private void shareQuotesToOthers(Context context, String url, String userName, String type) {
         String content;
         content = getShareContent(context, userName, "", type, false) + url;
 
         shareQuotesToOthers(context, content);
-    }
-
-    public void shareFeedToWhatsapp(final Context context, final CelebrityModel itemFeed, boolean isStream) {
-        if (itemFeed == null) return;
-        mRxPermissions = new RxPermissions((Activity) context);
-        if (itemFeed.getMediaType() == Constants.POST_TYPE_IMAGE || itemFeed.getMediaType() == Constants.POST_TYPE_CHALLENGE_SELFIE) {
-
-            String fileName = getFileNameFromURL(replaceTimeInUrl(itemFeed.getImage()));
-
-//            DownloadBitmap.getInstance().deleteAllFile();
-            mSubscriptionExternalPermissions = new CompositeDisposable();
-            mSubscriptionExternalPermissions.add(mRxPermissions.request(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    .subscribe(granted -> {
-                        if (granted) {
-                            if (DownloadBitmap.getInstance().isNeedDownloadedImage(Constants.APPSTERS_IMAGE_SHARE, fileName)) {
-                                DownloadBitmap.getInstance().deleteAllFile();
-                                DownloadBitmap.getInstance().downloadBitmap(context, itemFeed.getImage(),
-                                        Constants.APPSTERS_IMAGE_SHARE, fileName,
-                                        new DownloadBitmap.IDownloadListener() {
-                                            @Override
-                                            public void successful(String filePath) {
-                                                shareImageToWhatsapp(context, Uri.parse(filePath), itemFeed.getWebPostUrl(), itemFeed.getUserName(), SHARE_TYPE_POST);
-                                                if (mSubscriptionExternalPermissions != null && !mSubscriptionExternalPermissions.isDisposed())
-                                                    mSubscriptionExternalPermissions.dispose();
-                                            }
-
-                                            @Override
-                                            public void fail() {
-                                                if (mSubscriptionExternalPermissions != null && !mSubscriptionExternalPermissions.isDisposed())
-                                                    mSubscriptionExternalPermissions.dispose();
-                                            }
-                                        });
-                            } else {
-                                shareImageToWhatsapp(context, Uri.parse(Constants.APPSTERS_IMAGE_SHARE +
-                                        fileName), itemFeed.getWebPostUrl(), itemFeed.getUserName(), SHARE_TYPE_POST);
-                                if (mSubscriptionExternalPermissions != null && !mSubscriptionExternalPermissions.isDisposed())
-                                    mSubscriptionExternalPermissions.dispose();
-                            }
-                        }
-                        if (mSubscriptionExternalPermissions != null && !mSubscriptionExternalPermissions.isDisposed())
-                            mSubscriptionExternalPermissions.dispose();
-                    }));
-
-        } else if (itemFeed.getMediaType() == Constants.POST_TYPE_VIDEO) {
-            shareVideoToWhatsapp(context, itemFeed.getWebPostUrl(), itemFeed.getUserName(), "", SHARE_TYPE_POST, true);
-        } else {
-            shareQuotesToWhatsapp(context, itemFeed.getTitle(), itemFeed.getWebPostUrl(), itemFeed.getUserName(), isStream ? SHARE_TYPE_STREAM : SHARE_TYPE_POST);
-        }
     }
 
     private String replaceTimeInUrl(String url) {

@@ -17,21 +17,11 @@ class MainViewModel constructor(
     private val veryfiPurchaseTransactionUseCase: VerifyPurchaseTransactionUseCase
 ) : BaseViewModel() {
 
-    private var iAPIsfinishedChecking = MutableLiveData<Boolean>()
-    val getiAPIsfinishedCheking = iAPIsfinishedChecking
-
-    private var verifyIAPPurchasedResponse = MutableLiveData<VerifyIAPResponeModel>()
-    val verifyIAPPurchased = verifyIAPPurchasedResponse
-
-    fun iAPIsfinishedChecking(transactionId: String) {
-        runUseCase(iAPIsfinishedCheckingUseCase, transactionId) {
-            iAPIsfinishedChecking.value = it
-        }
-    }
+     val verifyIAPPurchased = MutableLiveData<VerifyIAPResponeModel>()
 
     fun verifyIAPPurchased(request: VerifyIAPRequestModel) {
         runUseCase(veryfiPurchaseTransactionUseCase, request) {
-            verifyIAPPurchasedResponse.value = it
+            verifyIAPPurchased.value = it
             AppsterApplication.mAppPreferences.removeOrderObjectToList(request)
         }
     }

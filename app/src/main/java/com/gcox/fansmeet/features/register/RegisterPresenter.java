@@ -1,7 +1,6 @@
 package com.gcox.fansmeet.features.register;
 
 import com.gcox.fansmeet.common.Constants;
-import com.gcox.fansmeet.pushnotification.OneSignalUtil;
 import com.gcox.fansmeet.webservice.request.RegisterWithGoogleRequestModel;
 import com.gcox.fansmeet.manager.ShowErrorManager;
 import com.gcox.fansmeet.webservice.AppsterWebserviceAPI;
@@ -140,7 +139,6 @@ public class RegisterPresenter implements RegisterContract.UserActions {
 
             mView.onUserRegisterCompleted(registerResponse.getData().getUserInfo(),
                     registerResponse.getData().getAccess_token());
-            OneSignalUtil.setUser(registerResponse.getData().getUserInfo());
         } else if (registerResponse.getCode() == ShowErrorManager.ADMIN_BLOCKED) {
             mView.onAdminBlocked(registerResponse.getMessage());
 

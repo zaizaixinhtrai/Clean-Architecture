@@ -43,10 +43,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("Release_KeyStore.jks")
-            storePassword "LLJ5VvKBSnvYj8Ts"
-            keyAlias "gcox-acclaim"
-            keyPassword "LLJ5VvKBSnvYj8Ts"
+            storeFile file("Release_KeyStore_Old.jks")
+            storePassword "123456"
+            keyAlias "gcox"
+            keyPassword "123456"
             v2SigningEnabled true
         }
         debug {
@@ -71,12 +71,6 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
         archivesBaseName = "GCOX-versionCode-$versionCode"
-
-//        manifestPlaceholders = [
-//                onesignal_app_id: '933fc8f1-f915-4cc5-b213-00877d6c2220',
-//                // Project number pulled from dashboard, local value is ignored.
-//                onesignal_google_project_number: 'REMOTE'
-//        ]
     }
     buildTypes {
         release {
@@ -132,7 +126,7 @@ android {
             buildConfigField "String", "IAP_KEY64BIT", "\"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo2NZAd+cGmqaw6+Q4LjGCnYA80zHt/CbRwvjnCrSy0xNGLTXmX6t3KMfNxwvtscg+kD1ERxj9IZIunWNHHPkfN6OjWNOrH/+20C8vRs/+Et1UCf2X64qWtKU27dGuyOis2NxJ9NncPyj8zcKvd6UM0FJQL0t60RxaAJEhsWiz+xjksijjhVQIALVIidy8vKlTeVHP5pFi2SuI8vMiIcBZzJeNtPU23CWP+wfeFfsmcmOkSmvKiskKx/GJax8JQCzKPf54J9S9lrcuqznHBat4dJc63dX/8AygoQqwkpnbLmgL3TW4skwndI2eraLKPpIAg48jgBBDB2WVcn9jjLlKQIDAQAB\""
 
             manifestPlaceholders = [
-                    onesignal_app_id               : '933fc8f1-f915-4cc5-b213-00877d6c2220',
+                    onesignal_app_id               : '4dghsadgfh-ghgh-56yu-56jk-00877d6c2220',
                     // Project number pulled from dashboard, local value is ignored.
                     onesignal_google_project_number: 'REMOTE'
             ]
@@ -140,15 +134,15 @@ android {
 
         prod {
             applicationId "com.gcox.acclaim"
-            resValue "string", "app_name", "ACCLAIM!"
-            resValue "string", "facebook_app_id", "2406129246379853"
+            resValue "string", "facebook_app_id", "2214080145478616"
+            resValue "string", "app_name", "StgACCLAIM!"
             flavorDimensions "belive"
-            buildConfigField "String", ENDPOINT, "\"https://famousmeetapi.acclaim.io/\""
+            buildConfigField "String", ENDPOINT, "\"https://famousmeetapi.smartblockdev.com/\""
             buildConfigField "String", AWS_S3_SERVER_LINK, "\"http://zpop-staging.s3-ap-southeast-1.amazonaws.com\""
-            buildConfigField "String", "IAP_KEY64BIT", "\"\""
+            buildConfigField "String", "IAP_KEY64BIT", "\"MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAo2NZAd+cGmqaw6+Q4LjGCnYA80zHt/CbRwvjnCrSy0xNGLTXmX6t3KMfNxwvtscg+kD1ERxj9IZIunWNHHPkfN6OjWNOrH/+20C8vRs/+Et1UCf2X64qWtKU27dGuyOis2NxJ9NncPyj8zcKvd6UM0FJQL0t60RxaAJEhsWiz+xjksijjhVQIALVIidy8vKlTeVHP5pFi2SuI8vMiIcBZzJeNtPU23CWP+wfeFfsmcmOkSmvKiskKx/GJax8JQCzKPf54J9S9lrcuqznHBat4dJc63dX/8AygoQqwkpnbLmgL3TW4skwndI2eraLKPpIAg48jgBBDB2WVcn9jjLlKQIDAQAB\""
 
             manifestPlaceholders = [
-                    onesignal_app_id               : '933fc8f1-f915-4cc5-b213-00877d6c2220',
+                    onesignal_app_id               : '4dghsadgfh-ghgh-56yu-56jk-00877d6c2220',
                     // Project number pulled from dashboard, local value is ignored.
                     onesignal_google_project_number: 'REMOTE'
             ]

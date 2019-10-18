@@ -1,7 +1,6 @@
 package com.gcox.fansmeet.domain.interactors.useraction
 
 import com.gcox.fansmeet.domain.interactors.UseCase
-import com.gcox.fansmeet.domain.repository.GiftStoreRepository
 import com.gcox.fansmeet.domain.repository.UserActionRepository
 import io.reactivex.Observable
 import io.reactivex.Scheduler

@@ -12,18 +12,11 @@ import com.gcox.fansmeet.features.home.viewholders.HomeViewHolder
 import kotlinx.android.synthetic.main.child_fragment_home.*
 import org.koin.android.viewmodel.ext.android.viewModel
 import android.arch.lifecycle.Observer
-import android.content.Intent
 import android.support.annotation.Nullable
-import android.support.v4.app.ActivityOptionsCompat
-import android.util.Log
-import com.appster.extensions.inflate
-import com.gcox.fansmeet.common.ConstantBundleKey
 import com.gcox.fansmeet.common.Constants
 import com.gcox.fansmeet.core.adapter.DisplayableItem
 import com.gcox.fansmeet.core.adapter.OnLoadMoreListenerRecyclerView
 import com.gcox.fansmeet.core.dialog.DialogInfoUtility
-import com.gcox.fansmeet.features.profile.ChallengeListActivity
-import com.gcox.fansmeet.features.profile.userprofile.UserProfileActivity
 import com.gcox.fansmeet.models.eventbus.EventBusRefreshFragment
 import com.gcox.fansmeet.util.CheckNetwork
 import com.gcox.fansmeet.util.DialogUtil
@@ -151,12 +144,7 @@ class ChildHomeFragment : BaseFragment(), HomeViewHolder.OnClickListener, HomeBa
     }
 
     override fun onUserImageClicked(item: CelebritiesMode) {
-        val options =
-            ActivityOptionsCompat.makeCustomAnimation(context!!, R.anim.push_in_to_right, R.anim.push_in_to_left)
-        startActivityForResult(
-            UserProfileActivity.newIntent(context!!, item.userId!!, item.userName!!),
-            Constants.REQUEST_CODE_VIEW_USER_PROFILE, options.toBundle()
-        )
+
     }
 
     private fun refreshData() {
@@ -257,42 +245,4 @@ class ChildHomeFragment : BaseFragment(), HomeViewHolder.OnClickListener, HomeBa
             tvComingSoonVisibility = View.GONE
         }
     }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == Activity.RESULT_OK) {
-            when (requestCode) {
-                Constants.REQUEST_CODE_VIEW_USER_PROFILE -> {
-                    if (data != null) {
-                        val userId = data.getIntExtra(ConstantBundleKey.BUNDLE_USER_ID, 0)
-                        val followStatus =
-                            data.getBooleanExtra(ConstantBundleKey.BUNDLE_DATA_FOLLOW_USER_FROM_PROFILE_ACTIVITY, false)
-                        changeFollowStatus(userId, followStatus)
-                        val isBlock = data.getBooleanExtra(UserProfileActivity.ARG_USER_BLOCKED, false)
-                        if (isBlock) {
-//                            refreshData()
-                            EventBus.getDefault().post(EventBusRefreshFragment())
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun changeFollowStatus(userId: Int, followStatus: Boolean) {
-        if (listUser.isNotEmpty()) {
-            for (i in 0 until listUser.size) {
-                if (listUser[i] is CelebritiesMode) {
-                    val item = Objects.requireNonNull(listUser[i]) as CelebritiesMode
-                    if (item.userId == userId) {
-                        item.isFollow = followStatus
-                        listUser[i] = item
-                        homeScreenAdapter?.notifyDataSetChanged()
-                        return
-                    }
-                }
-            }
-        }
-    }
-
 }

@@ -4,7 +4,6 @@ import com.gcox.fansmeet.common.Constants
 import com.gcox.fansmeet.data.entity.FollowUserEntity
 import com.gcox.fansmeet.data.entity.SendGiftEntity
 import com.gcox.fansmeet.data.repository.datasource.UserActionDataSource
-import com.gcox.fansmeet.features.profile.userprofile.LikeType
 import com.gcox.fansmeet.util.AppsterUtility
 import com.gcox.fansmeet.webservice.AppsterWebserviceAPI
 import com.gcox.fansmeet.webservice.request.FollowUserRequestModel
@@ -46,19 +45,11 @@ constructor(private val service: AppsterWebserviceAPI) :
     }
 
     override fun unlike(postId: Int, type: Int): Observable<BaseResponse<Int>> {
-        return if (type == LikeType.CHALLENGES) {
-            service.unlike(AppsterUtility.getAuth(), postId)
-        } else {
-            service.unlikeEntries(AppsterUtility.getAuth(), postId)
-        }
+        return   service.unlikeEntries(AppsterUtility.getAuth(), postId)
     }
 
     override fun likePost(postId: Int, type: Int): Observable<BaseResponse<Int>> {
-        return if (type == LikeType.CHALLENGES) {
-            service.likePost(AppsterUtility.getAuth(), postId)
-        } else {
-            service.likeEntries(AppsterUtility.getAuth(), postId)
-        }
+        return   service.likeEntries(AppsterUtility.getAuth(), postId)
     }
 
     override fun followUser(followUserId: Int): Observable<BaseResponse<FollowUserEntity>> {

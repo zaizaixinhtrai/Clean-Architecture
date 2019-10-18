@@ -717,23 +717,6 @@ public class RegisterActivity extends BaseActivity implements RegisterContract.R
         if (!checkEmail.isEmail(email)) {
             email = "";
         }
-
-
-//        RegisterWithTwitterRequestModel request = new RegisterWithTwitterRequestModel(userID,
-//                displayName,
-//                loginId,
-//                Constants.ANDROID_DEVICE_TYPE,
-//                AppsterApplication.mAppPreferences.getDevicesUDID(), AppsterApplication.mAppPreferences.getDevicesToken(),
-//                0, 0, "",
-//                email,
-//                Utils.getFileFromBitMap(this, userAvatar),
-//                mReferralId,
-//                gender,
-//                AppsterApplication.getDeviceName(),
-//                String.valueOf(Build.VERSION.RELEASE),
-//                AppsterApplication.getCurrentVersionName(this));
-//        mRegisterPresenter.register(request);
-
     }
 
     private void registerWithFacebook() throws PackageManager.NameNotFoundException {
@@ -790,8 +773,6 @@ public class RegisterActivity extends BaseActivity implements RegisterContract.R
 
     @OnClick(R.id.ivUserImage)
     public void onClickChooseImage(View view) {
-
-        showPicPopUp();
     }
 
 }

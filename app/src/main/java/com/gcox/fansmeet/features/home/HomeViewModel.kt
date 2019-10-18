@@ -17,9 +17,7 @@ import com.gcox.fansmeet.webservice.request.HomeCelebritiesRequestModel
  */
 class HomeViewModel constructor(
     private val getLiveShowsUseCase: GetUsersUseCase,
-    private val getBannersUseCase: GetBannersUseCase,
-    private val followUseCase: FollowUseCase,
-    private val unFollowUseCase: UnFollowUseCase
+    private val getBannersUseCase: GetBannersUseCase
 ) : BaseViewModel() {
 
     private var homeData = MutableLiveData<HomeModel>()
@@ -45,17 +43,11 @@ class HomeViewModel constructor(
     }
 
     fun followUser(userId: Int, position: Int) {
-        runUseCase(followUseCase, userId) {
-            followUseResponse.value = FollowResponse(userId, position)
-            if (it.meFollowingCount !=null) AppsterApplication.mAppPreferences.userModel.followingCount = it.meFollowingCount!!
-        }
+
     }
 
     fun unFollowUser(userId: Int, position: Int) {
-        runUseCase(unFollowUseCase, userId) {
-            unFollowUseResponse.value = FollowResponse(userId, position)
-            if (it.meFollowingCount !=null) AppsterApplication.mAppPreferences.userModel.followingCount = it.meFollowingCount!!
-        }
+
     }
 
     fun clearData() {

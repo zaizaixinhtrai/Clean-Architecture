@@ -24,24 +24,11 @@ import android.widget.Toast
 import com.gcox.fansmeet.AppsterApplication
 import com.gcox.fansmeet.R
 import com.gcox.fansmeet.common.BaseBundle
-import com.gcox.fansmeet.common.ConstantBundleKey
 import com.gcox.fansmeet.common.Constants
 import com.gcox.fansmeet.core.BeLiveDefaultTheme
 import com.gcox.fansmeet.core.BeLiveThemeHelper
 import com.gcox.fansmeet.core.dialog.DialogInfoUtility
 import com.gcox.fansmeet.core.dialog.ProgressHUD
-import com.gcox.fansmeet.exception.GcoxException
-import com.gcox.fansmeet.features.challengedetail.ChallengeDetailActivity
-import com.gcox.fansmeet.features.challengeentries.ChallengeEntriesActivity
-import com.gcox.fansmeet.features.editvideo.EditActivity
-import com.gcox.fansmeet.features.editvideo.RecordActivity
-import com.gcox.fansmeet.features.imageeditor.EditImageActivity
-import com.gcox.fansmeet.features.profile.celebrityprofile.delegates.CelebrityModel
-import com.gcox.fansmeet.features.profile.userprofile.UserProfileActivity
-import com.gcox.fansmeet.manager.ShowErrorManager
-import com.gcox.fansmeet.pushnotification.NotificationPushModel
-import com.gcox.fansmeet.util.CustomDialogUtils
-import com.gcox.fansmeet.util.FileUtility
 import com.gcox.fansmeet.util.FileUtility.getOutputMediaFile
 import com.gcox.fansmeet.util.StringUtil
 import com.tbruyelle.rxpermissions2.RxPermissions
@@ -139,82 +126,6 @@ abstract class BaseActivity : HandleErrorActivity() {
         return Uri.fromFile(getOutputMediaFile(type))
     }
 
-
-    fun showVideosPopUp() {
-        compositeDisposable.add(mRxPermissions.request(
-            Manifest.permission.CAMERA,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-            .subscribe { granted ->
-                if (granted) {
-                    CustomDialogUtils.openRecordVideoDialog(
-                        this,
-                        getString(R.string.select_a_videos_from),
-                        { startCameraVideosActivity() },
-                        { startPickVideos() })
-                }
-            })
-    }
-
-    fun loadVideoAfterPickFromGallery(uri: Uri?) {
-        if (uri != null) {
-            val videoFilePath: String?
-            if (FileUtility.isGoogleVideosUri(uri)) {
-                //                    Toast.makeText(getApplicationContext(), getString(R.string.fail_to_load_video), Toast.LENGTH_SHORT).show();
-                videoFilePath = FileUtility.getGoogleFilePath(this, uri)
-            } else {
-                videoFilePath = FileUtility.getPath(this, uri)
-            }
-
-            if (videoFilePath != null) {
-                val fileExtention = videoFilePath!!.substring(videoFilePath.lastIndexOf("."))
-                if (fileExtention.equals(getString(R.string.mp4_extention), ignoreCase = true)) {
-                    openTrimVideoScreen(this@BaseActivity, uri)
-                } else {
-                    Toast.makeText(
-                        applicationContext,
-                        getString(R.string.support_mp4),
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            } else {
-                Toast.makeText(
-                    applicationContext,
-                    getString(R.string.fail_to_load_video),
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
-        } else {
-            Toast.makeText(
-                applicationContext,
-                getString(R.string.fail_to_load_video),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
-    }
-
-    fun openImageEditorScreen(activity: Activity, uri: Uri, urlSelfieImage: String) {
-        val i = Intent(activity, EditImageActivity::class.java)
-        i.putExtra(ConstantBundleKey.BUNDLE_MEDIA_KEY, uri.toString())
-        i.putExtra(ConstantBundleKey.BUNDLE_URL_SELFIE_IMAGE, urlSelfieImage)
-        startActivityForResult(i, Constants.REQUEST_PHOTO_EDITOR_ACTIVITY)
-    }
-
-    fun openTrimVideoScreen(activity: Activity, uri: Uri) {
-        val i = Intent(activity, EditActivity::class.java)
-        i.putExtra(Constants.VIDEO_PATH, uri.toString())
-        startActivityForResult(i, Constants.VIDEO_TRIMMED_REQUEST)
-    }
-
-    fun startCameraVideosActivity() {
-        val config = RecordActivity.createConfig()
-        RecordActivity.startActivity(
-            this, Constants.CAMERA_VIDEO_REQUEST,
-            config
-        )
-    }
-
     fun startPickVideos() {
         try {
             val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
@@ -269,32 +180,6 @@ abstract class BaseActivity : HandleErrorActivity() {
         }
     }
 
-    fun showPicPopUp() {
-        compositeDisposable.add(mRxPermissions.request(
-            Manifest.permission.CAMERA,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.WRITE_EXTERNAL_STORAGE
-        )
-            .subscribe { granted ->
-                if (granted) {
-                    CustomDialogUtils.openRecordVideoDialog(
-                        this,
-                        getString(R.string.select_a_picture_from),
-                        { takePictureFromCamera() },
-                        { takePictureFromGallery() })
-                }
-            })
-    }
-
-    fun takePictureFromCamera() {
-
-        val config = RecordActivity.createConfig()
-        RecordActivity.startActivity(
-            this, Constants.REQUEST_PIC_FROM_CAMERA,
-            config
-        )
-
-    }
 
     fun performCrop(inPut: Uri, outPut: Uri) {
         // take care of exceptions
@@ -447,91 +332,6 @@ abstract class BaseActivity : HandleErrorActivity() {
                 R.anim.push_in_to_right,
                 R.anim.push_in_to_left
             )
-        ActivityCompat.startActivityForResult(
-            this,
-            UserProfileActivity.newIntent(applicationContext, userID, userName),
-            Constants.REQUEST_CODE_VIEW_USER_PROFILE, options.toBundle()
-        )
-    }
-
-    fun redirectNotificationShowing(notificationEntity: NotificationPushModel?) {
-        val options = ActivityOptionsCompat.makeCustomAnimation(
-            applicationContext,
-            R.anim.push_in_to_right,
-            R.anim.push_in_to_left
-        )
-        if (notificationEntity != null) {
-            Timber.e("getNotification_type() =" + notificationEntity.type)
-            when (notificationEntity.type) {
-
-                Constants.NOTIFYCATION_TYPE_LIKE -> {
-                    notificationNavigatePost(notificationEntity.postType, notificationEntity.postId)
-                }
-
-                Constants.NOTIFYCATION_TYPE_RECEIVE_GIFT -> {
-                }
-
-                Constants.NOTIFYCATION_TYPE_FOLLOW -> {
-                    ActivityCompat.startActivityForResult(
-                        this,
-                        UserProfileActivity.newIntent(
-                            applicationContext,
-                            notificationEntity.userId,
-                            ""
-                        ),
-                        Constants.REQUEST_CODE_VIEW_USER_PROFILE, options.toBundle()
-                    )
-                }
-
-                Constants.NOTIFYCATION_TYPE_COMMENT -> {
-                    notificationNavigatePost(notificationEntity.postType, notificationEntity.postId)
-                }
-
-                Constants.NOTIFYCATION_TYPE_POST -> {
-                    notificationNavigatePost(notificationEntity.postType, notificationEntity.postId)
-                }
-
-                Constants.NOTIFYCATION_TYPE_TAG -> {
-                    notificationNavigatePost(notificationEntity.postType, notificationEntity.postId)
-                }
-            }
-        }
-    }
-
-    private fun notificationNavigatePost(postType: Int, postId: Int) {
-        val options = ActivityOptionsCompat.makeCustomAnimation(
-            applicationContext,
-            R.anim.push_in_to_right,
-            R.anim.push_in_to_left
-        )
-
-        var intent: Intent?
-        when (postType) {
-            Constants.POST_TYPE_CHALLENGE -> {
-                intent =
-                    ChallengeDetailActivity.newIntent(this, postId, false)
-                ActivityCompat.startActivityForResult(
-                    this,
-                    intent,
-                    Constants.REQUEST_CHALLENGE_DETAIL_ACTIVITY,
-                    options.toBundle()
-                )
-            }
-
-            Constants.CHALLENGE_SUBMISSION -> {
-                intent = ChallengeEntriesActivity.newIntent(this, postId)
-                ActivityCompat.startActivityForResult(
-                    this,
-                    intent,
-                    Constants.REQUEST_CHALLENGE_ENTRIES_ACTIVITY,
-                    options.toBundle()
-                )
-            }
-
-            Constants.USER_POST_NORMAL -> {
-
-            }
-        }
     }
 
     companion object {

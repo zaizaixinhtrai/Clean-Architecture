@@ -18,41 +18,24 @@ import android.view.animation.OvershootInterpolator
 import android.widget.Toast
 import com.gcox.fansmeet.AppsterApplication
 import com.gcox.fansmeet.R
-import com.gcox.fansmeet.common.ConstantBundleKey
-import com.gcox.fansmeet.common.Constants
 import com.gcox.fansmeet.core.activity.BaseToolBarActivity
 import com.gcox.fansmeet.customview.spacenavigationview.SpaceItem
 import com.gcox.fansmeet.customview.spacenavigationview.SpaceOnClickListener
 import com.gcox.fansmeet.features.challenges.ChallengesScreenFragment
 import com.gcox.fansmeet.features.home.HomeScreenFragment
-import com.gcox.fansmeet.features.notification.NotificationContentFragment
-import com.gcox.fansmeet.features.post.ActivityPostMedia
-import com.gcox.fansmeet.features.post.BundleMedia
-import com.gcox.fansmeet.features.postchallenge.PostChallengeActivity
-import com.gcox.fansmeet.features.profile.celebrityprofile.delegates.CelebrityModel
-import com.gcox.fansmeet.features.profile.userprofile.FragmentMe
-import com.gcox.fansmeet.features.search.SearchScreenFragment
-import com.gcox.fansmeet.pushnotification.NotificationPushModel
-import com.gcox.fansmeet.services.CheckTransactionPurchaService
-import com.gcox.fansmeet.services.RefreshFollowerListService
 import com.gcox.fansmeet.util.AnimatorUtils
-import com.gcox.fansmeet.util.FileUtility
 import com.gcox.fansmeet.util.Utils
-import com.yalantis.ucrop.UCrop
 import kotlinx.android.synthetic.main.activity_main.*
 import org.koin.android.viewmodel.ext.android.viewModel
 import timber.log.Timber
-import java.io.File
 import java.util.ArrayList
 
 class MainActivity : BaseToolBarActivity(), View.OnClickListener {
 
     private var fragmentHome: HomeScreenFragment? = null
     private var challengesFragment: ChallengesScreenFragment? = null
-    private var profileFragment: SearchScreenFragment? = null
-    private var searchFragment: SearchScreenFragment? = null
-    internal var notifyFragment: NotificationContentFragment? = null
-    internal var fragmentMe: FragmentMe? = null
+    internal var notifyFragment: ChallengesScreenFragment? = null
+    internal var fragmentMe: ChallengesScreenFragment? = null
     private var mAdapter: TabsPagerAdapter? = null
     private var currentTabId = 0
     private var animList: MutableList<Animator> = ArrayList()
@@ -82,26 +65,15 @@ class MainActivity : BaseToolBarActivity(), View.OnClickListener {
 
     override fun onResume() {
         super.onResume()
-        if (RefreshFollowerListService.shouldRefreshFollowerList()) {
-            startService(Intent(this, RefreshFollowerListService::class.java))
-        }
-
-//        if (!EventBus.getDefault().isRegistered(this)) {
-//            EventBus.getDefault().register(this)
-//        }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-//        if (EventBus.getDefault().isRegistered(this)) {
-//            EventBus.getDefault().unregister(this)
-//        }
     }
 
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         Timber.e("onNewIntent")
-        notificationSwitchTo(intent)
     }
 
     override fun init() {
@@ -113,22 +85,11 @@ class MainActivity : BaseToolBarActivity(), View.OnClickListener {
         btn_arc_image.setOnClickListener(this)
         btn_arc_video.setOnClickListener(this)
         btn_arc_challenge.setOnClickListener(this)
-        notificationSwitchTo(intent)
-
     }
 
     private fun observeData() {
         mainViewModel.getError().observe(this, Observer {
             dismissDialog()
-        })
-
-        mainViewModel.getiAPIsfinishedCheking.observe(this, Observer {
-            //            if (it != null && !it) {
-//                val model = AppsterApplication.mAppPreferences.verifyIAPRequestModel
-//                if (model != null) {
-//                    mainViewModel.verifyIAPPurchased(model)
-//                }
-//            }
         })
 
         mainViewModel.verifyIAPPurchased.observe(this, Observer {
@@ -137,17 +98,6 @@ class MainActivity : BaseToolBarActivity(), View.OnClickListener {
                 AppsterApplication.mAppPreferences.userModel.gems = it.totalBeanIncrease
             }
         })
-    }
-
-    private fun notificationSwitchTo(intent: Intent?) {
-        val bundle = intent?.extras
-        if (bundle != null) {
-            val notificationEntity =
-                bundle.getParcelable<NotificationPushModel>(ConstantBundleKey.BUNDLE_NOTIFICATION_KEY)
-            if (notificationEntity != null) {
-                redirectNotificationShowing(notificationEntity)
-            }
-        }
     }
 
     override fun onBackPressed() {
@@ -285,81 +235,6 @@ class MainActivity : BaseToolBarActivity(), View.OnClickListener {
         }
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        if (resultCode == RESULT_OK) {
-            when (requestCode) {
-                Constants.REQUEST_PIC_FROM_LIBRARY -> {
-                    val imageCroppedURI: Uri
-                    try {
-                        imageCroppedURI = getOutputMediaFileUri(FileUtility.MEDIA_TYPE_IMAGE_CROPPED)
-                    } catch (e: NullPointerException) {
-                        Timber.d(e)
-                        return
-                    }
-
-                    if (data?.data != null) {
-                        fileUri = data.data
-                        performCrop(fileUri, imageCroppedURI)
-                    }
-                }
-
-                Constants.REQUEST_PIC_FROM_CROP -> {
-                    if (data != null) {
-                        val resultUri = UCrop.getOutput(data)
-                        if (resultUri != null) {
-                            startPostWithMedia(resultUri, Constants.POST_TYPE_IMAGE)
-                        } else {
-                            Toast.makeText(this, R.string.toast_cannot_retrieve_cropped_image, Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                    }
-                }
-
-                Constants.REQUEST_PIC_FROM_CAMERA -> {
-                    if (data?.data != null) {
-                        fileUri = data.data
-                        startPostWithMedia(fileUri, Constants.POST_TYPE_IMAGE)
-                    }
-                }
-
-                Constants.CAMERA_VIDEO_REQUEST -> {
-                    if (data?.data != null) {
-                        fileUri = data.data
-                        Timber.e("mRecordUrl $fileUri")
-                        startPostWithMedia(fileUri, Constants.POST_TYPE_VIDEO)
-                    }
-                }
-
-                Constants.PICK_VIDEO_FROM_LIBRARY_REQUEST -> {
-                    if (data?.data != null) {
-                        fileUri = data.data
-                        loadVideoAfterPickFromGallery(fileUri)
-                    }
-                }
-
-                Constants.VIDEO_TRIMMED_REQUEST -> {
-                    if (data != null) {
-                        val urlImage = data.getStringExtra(Constants.VIDEO_PATH)
-                        val image = Uri.fromFile(File(urlImage))
-                        startPostWithMedia(image, Constants.POST_TYPE_VIDEO)
-                    }
-                }
-
-                Constants.POST_REQUEST, Constants.POST_CHALLENGE_REQUEST -> {
-                    if (fragmentMe != null) {
-                        fragmentMe?.onActivityResult(requestCode, resultCode, data)
-                    }
-
-                    if (viewPager.currentItem != AppNavigation.PROFILE && snvBottomBar != null) {
-                        snvBottomBar.changeCurrentItem(AppNavigation.PROFILE)
-                    }
-
-                    currentTabId = AppNavigation.PROFILE
-                }
-            }
-        }
-    }
 
     override fun onClick(v: View?) {
 
@@ -370,30 +245,17 @@ class MainActivity : BaseToolBarActivity(), View.OnClickListener {
 
             R.id.btn_arc_comment -> {
                 hideMenu()
-                startPostWithMedia(Uri.parse(""), Constants.POST_TYPE_QUOTES)
             }
 
             R.id.btn_arc_image -> {
                 hideMenu()
-                showPicPopUp()
             }
 
             R.id.btn_arc_video -> {
                 hideMenu()
-                showVideosPopUp()
             }
 
             R.id.btn_arc_challenge -> {
-                hideMenu()
-                val intent = PostChallengeActivity.newIntent(this, false, CelebrityModel(), -1)
-                val options =
-                    ActivityOptionsCompat.makeCustomAnimation(this, R.anim.push_in_to_right, R.anim.push_in_to_left)
-                ActivityCompat.startActivityForResult(
-                    this,
-                    intent,
-                    Constants.POST_CHALLENGE_REQUEST,
-                    options.toBundle()
-                )
             }
         }
     }
@@ -540,19 +402,6 @@ class MainActivity : BaseToolBarActivity(), View.OnClickListener {
         )
     }
 
-    private fun startPostWithMedia(fileUri: Uri, Type: Int) {
-        val intent = Intent(this@MainActivity, ActivityPostMedia::class.java)
-        val bundleMedia = BundleMedia()
-        bundleMedia.setIsPost(true)
-        bundleMedia.key = ConstantBundleKey.BUNDLE_MEDIA_KEY
-        bundleMedia.type = Type
-        bundleMedia.uriPath = fileUri.toString()
-        bundleMedia.setIntent(intent)
-
-        val options =
-            ActivityOptionsCompat.makeCustomAnimation(this, R.anim.push_in_to_right, R.anim.push_in_to_left)
-        ActivityCompat.startActivityForResult(this, intent, Constants.POST_REQUEST, options.toBundle())
-    }
 
     private fun checkVerifyIAP() {
 //        val model = AppsterApplication.mAppPreferences.verifyIAPRequestModel
@@ -589,7 +438,7 @@ class MainActivity : BaseToolBarActivity(), View.OnClickListener {
 
                 AppNavigation.SEARCH -> {
                     if (notifyFragment == null) {
-                        notifyFragment = NotificationContentFragment.newInstance()
+                        notifyFragment = ChallengesScreenFragment.newInstance()
                     }
                     return notifyFragment
                 }
@@ -603,10 +452,7 @@ class MainActivity : BaseToolBarActivity(), View.OnClickListener {
 
                 AppNavigation.PROFILE -> {
                     if (fragmentMe == null) {
-                        fragmentMe = FragmentMe.getInstance(
-                            AppsterApplication.mAppPreferences.userModel.userId,
-                            AppsterApplication.mAppPreferences.userModel.userName!!, false
-                        )
+                        fragmentMe = ChallengesScreenFragment.newInstance()
                     }
                     return fragmentMe
                 }

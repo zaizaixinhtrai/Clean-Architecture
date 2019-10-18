@@ -27,7 +27,6 @@ import com.gcox.fansmeet.core.activity.WebViewActivity
 import com.gcox.fansmeet.customview.ScalableVideo.ScalableType
 import com.gcox.fansmeet.features.main.MainActivity
 import com.gcox.fansmeet.features.register.RegisterActivity
-import com.gcox.fansmeet.location.GPSTClass
 import com.gcox.fansmeet.manager.ShowErrorManager
 import com.gcox.fansmeet.manager.SocialManager
 import com.gcox.fansmeet.models.TwitterInformationModel
@@ -395,22 +394,9 @@ class LoginActivity : BaseActivity(), GoogleApiClient.OnConnectionFailedListener
         loginRequest.device_udid = AppsterApplication.mAppPreferences.devicesUDID
 
         //        if (mRxPermissions.isGranted(android.Manifest.permission.ACCESS_COARSE_LOCATION) && mRxPermissions.isGranted(android.Manifest.permission.ACCESS_FINE_LOCATION)) {
-        val gpstClass = GPSTClass.getInstance()
-        gpstClass.getLocation(this)
 
         var latitude = 0.0
         var longitude = 0.0
-
-        // check if GPS enabled
-        if (gpstClass.canGetLocation()) {
-            // can't get location
-            // GPS or Network is not enabled
-            // Ask user to enable GPS/network in settings
-            latitude = gpstClass.latitude
-            longitude = gpstClass.longitude
-
-        }
-        //        }
 
         loginRequest.longitude = longitude
         loginRequest.latitude = latitude

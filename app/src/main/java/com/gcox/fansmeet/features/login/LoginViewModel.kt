@@ -8,7 +8,6 @@ import com.gcox.fansmeet.domain.interactors.login.FacebookLoginUseCase
 import com.gcox.fansmeet.domain.interactors.login.GoogleLoginUseCase
 import com.gcox.fansmeet.domain.interactors.login.InstagramLoginUseCase
 import com.gcox.fansmeet.models.UserModel
-import com.gcox.fansmeet.pushnotification.OneSignalUtil
 import com.gcox.fansmeet.webservice.AppsterWebServices
 import com.gcox.fansmeet.webservice.request.*
 import com.gcox.fansmeet.webservice.response.LoginResponseModel
@@ -98,7 +97,6 @@ class LoginViewModel(
         AppsterApplication.mAppPreferences.saveUserInforModel(rsp.userInfo)
         AppsterApplication.mAppPreferences.saveUserToken(rsp.accessToken)
         loginLiveData.value = rsp.userInfo
-        OneSignalUtil.setUser(rsp.userInfo)
 
 //        AppsterApplication.application?.startKoin()
 

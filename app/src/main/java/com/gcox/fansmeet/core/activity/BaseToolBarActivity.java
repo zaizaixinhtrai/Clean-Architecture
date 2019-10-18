@@ -30,16 +30,7 @@ import com.gcox.fansmeet.core.dialog.DialogbeLiveConfirmation;
 import com.gcox.fansmeet.customview.CircleImageView;
 import com.gcox.fansmeet.customview.CustomFontTextView;
 import com.gcox.fansmeet.customview.CustomTypefaceSpan;
-import com.gcox.fansmeet.features.editprofile.EditProfileActivity;
-import com.gcox.fansmeet.features.invitefriend.InviteFriendActivity;
-import com.gcox.fansmeet.features.loyalty.LoyaltyActivity;
-import com.gcox.fansmeet.features.refill.ActivityRefill;
-import com.gcox.fansmeet.features.rewards.RewardActivity;
-import com.gcox.fansmeet.features.setting.SettingActivity;
-import com.gcox.fansmeet.features.stars.StarsActivity;
-import com.gcox.fansmeet.features.treasurehunt.TreasureHuntActivity;
 import com.gcox.fansmeet.models.UserModel;
-import com.gcox.fansmeet.services.RefreshFollowerListService;
 import com.gcox.fansmeet.util.CheckNetwork;
 import com.gcox.fansmeet.util.DialogManager;
 import com.gcox.fansmeet.util.ImageLoaderUtil;
@@ -268,14 +259,8 @@ public abstract class BaseToolBarActivity extends BaseActivity {
         switch (menuItem.getItemId()) {
 
             case R.id.nav_setting:
-                intent = new Intent(this, SettingActivity.class);
-                ActivityCompat.startActivityForResult(this, intent, Constants.SETTING_REQUEST, options.toBundle());
-                break;
 
             case R.id.navGem:
-                intent = new Intent(BaseToolBarActivity.this, ActivityRefill.class);
-                startActivity(intent, options.toBundle());
-                break;
 
             case R.id.nav_logout:
                 confirmLogout();
@@ -286,20 +271,14 @@ public abstract class BaseToolBarActivity extends BaseActivity {
 //                intent = new Intent(BaseToolBarActivity.this, StarsActivity.class);
 //                startActivity(intent, options.toBundle());
 
-                startActivity(TreasureHuntActivity.createIntent(this),options.toBundle());
                 break;
 
             case R.id.navReward:
-                startActivity(RewardActivity.createIntent(this));
                 break;
             case R.id.navLoyalty:
-                intent = new Intent(BaseToolBarActivity.this, LoyaltyActivity.class);
-                startActivity(intent, options.toBundle());
                 break;
 
             case R.id.nav_invite_friend:
-                intent = new Intent(BaseToolBarActivity.this, InviteFriendActivity.class);
-                startActivity(intent, options.toBundle());
                 break;
         }
     }
@@ -331,7 +310,6 @@ public abstract class BaseToolBarActivity extends BaseActivity {
         compositeDisposable.add(AppsterWebServices.get().logoutApp("Bearer " + AppsterApplication.mAppPreferences.getUserToken(), request)
                 .subscribe(logoutDataResponse -> {
                     AppsterApplication.mAppPreferences.saveUserToken(null);
-                    RefreshFollowerListService.clearLastTimeSync();
                     AppsterApplication.logout(BaseToolBarActivity.this);
                     finish();
                 }, error -> {
@@ -530,9 +508,6 @@ public abstract class BaseToolBarActivity extends BaseActivity {
         imEditProfile.setImageResource(mBeLiveThemeHelper.getAppEditProfileIcon());
         imEditProfile.setVisibility(View.VISIBLE);
         imEditProfile.setOnClickListener(v -> {
-            ActivityOptionsCompat options = ActivityOptionsCompat.makeCustomAnimation(mActivity, R.anim.push_in_to_right, R.anim.push_in_to_left);
-            Intent intent1 = new Intent(mActivity, EditProfileActivity.class);
-            mActivity.startActivityForResult(intent1, Constants.REQUEST_CODE_EDIT_PROFILE, options.toBundle());
         });
     }
 
